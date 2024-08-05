@@ -10,9 +10,9 @@ class QpsController < ApplicationController
 
   def end_qp
     qp_number = params[:qp_number]
-    closing_date = params[:date]
+    date = params[:date]
 
-    uri = URI("http://192.175.175.41:5000/qp/closed?number=#{qp_number}&closingdate=#{closing_date}")
+    uri = URI("http://192.175.175.41:5000/qp/closed?number=#{qp_number}&date=#{date}")
     http = Net::HTTP.new(uri.host, uri.port)
     request = Net::HTTP::Post.new(uri.request_uri)
 
