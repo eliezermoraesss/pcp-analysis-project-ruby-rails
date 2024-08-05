@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang='pt-BR'>
+<head>
+<title>QP Landing Page</title>
+<%= csrf_meta_tags %>
+<%= csp_meta_tag %>
+
+<%= stylesheet_link_tag 'application', media: 'all' %>
+<%= javascript_include_tag 'application' %>
+</head>
+<body>
+<div class="container">
+<h1>List of QPs</h1>
+<ul id="qp-list" class="list-group">
+<% @qps.each do |qp| %>
+<li class="list-group-item d-flex justify-content-between align-items-center">
+<%= qp["number"] %>
+<button class="btn btn-primary end-qp-btn" data-qp-number="<%= qp["number"] %>">End QP</button>
+</li>
+<% end %>
+</ul>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="endQpModal" tabindex="-1" aria-labelledby="endQpModalLabel" aria-hidden="true">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title" id="endQpModalLabel">End QP</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+<form id="end-qp-form">
+<div class="mb-3">
+<label for="qp-number" class="form-label">QP Number</label>
+<input type="text" class="form-control" id="qp-number" readonly>
+</div>
+<div class="mb-3">
+<label for="end-date" class="form-label">End Date</label>
+<input type="text" class="form-control" id="end-date" placeholder="dd/mm/yyyy">
+</div>
+<button type="submit" class="btn btn-primary">Submit</button>
+</form>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+const endQpButtons = document.querySelectorAll('.end-qp-btn');
+const endQpModal = new bootstrap.Modal(document.getElementById('endQpModal'), {});
+const qpNumberInput = document.getElementById('qp-number');
+const endDateInput = document.getElementById('end-date');
+const endQpForm = document.getElementById('end-qp-form');
+
+  endQpButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const qpNumber = this.getAttribute('data-qp-number');
+      qpNumberInput.value = qpNumber;
+      endQpModal.show();
+    });
+  });
+
+  endQpForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const qpNumber = qpNumberInput.value;
+    const endDate = endDateInput.value;
+
+    fetch('<%= end_qp_qps_path %>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': '<%= form_authenticity_token %>'
+      },
+      body: JSON.stringify({ qp_number: qpNumber, date: endDate })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        toastr.success(data.message);
+      } else {
+        toastr.error(data.message);
+      }
+      endQpModal.hide();
+    });
+  });
+});
+
+</script>
+</body>
+</html>
